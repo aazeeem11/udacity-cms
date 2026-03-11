@@ -24,5 +24,9 @@
     </div>
 </form>
 <h2>OR</h2>
+{% if auth_url %}
 <a href="{{ auth_url }}"><img src="{{url_for('static', filename='images/sign-in-with-ms.svg')}}" /></a>
+{% else %}
+<p>Microsoft sign-in is not configured on this deployment.</p>
+{% endif %}
 {% endblock %}

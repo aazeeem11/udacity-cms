@@ -75,12 +75,19 @@ def login():
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('home')
         return redirect(next_page)
-    session["state"] = str(uuid.uuid4())
-    auth_url = _build_auth_url(scopes=Config.SCOPE, state=session["state"])
+    auth_url = None
+    if Config.CLIENT_ID and Config.CLIENT_SECRET:
+        session["state"] = str(uuid.uuid4())
+        auth_url = _build_auth_url(scopes=Config.SCOPE, state=session["state"])
     return render_template('login.html', title='Sign In', form=form, auth_url=auth_url)
 
 @app.route(Config.REDIRECT_PATH)  # Its absolute URL must match your app's redirect_uri set in AAD
 def authorized():
+    if not Config.CLIENT_ID or not Config.CLIENT_SECRET:
+        return render_template(
+            "auth_error.html",
+            result={"error": "Microsoft login is not configured. Set CLIENT_ID and CLIENT_SECRET."}
+        )
     if request.args.get('state') != session.get("state"):
         return redirect(url_for("home"))  # No-OP. Goes back to Index page
     if "error" in request.args:  # Authentication/Authorization failure
